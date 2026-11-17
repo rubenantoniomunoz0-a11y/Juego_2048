@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'screens/app.dart';
 import 'services/preferencias_service.dart';
