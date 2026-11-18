@@ -100,7 +100,7 @@ class _DetalleScreenState extends State<DetalleScreen> {
                 ),
                 const SizedBox(height: AppTheme.espaciadoL),
 
-                // Fila con los StatCard 
+                // Fila con los StatCard
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
