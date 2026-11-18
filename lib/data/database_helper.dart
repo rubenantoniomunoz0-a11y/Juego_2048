@@ -2,7 +2,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Clase Singleton que gestiona la creación y apertura de la base de datos SQLite.
-/// Requisito A.2.1: Debe ser un singleton y definir la versión y las tablas en onCreate.
 class DatabaseHelper {
   // ─────────────────────────────────────────────
   // PATRÓN SINGLETON
@@ -112,7 +111,7 @@ class DatabaseHelper {
   }
 
   // ─────────────────────────────────────────────
-  // MIGRACIÓN (Requisito A.2.7: v1 a v2)
+  // MIGRACIÓN
   // ─────────────────────────────────────────────
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
