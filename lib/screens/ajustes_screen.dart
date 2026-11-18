@@ -86,7 +86,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
                     ],
                     selected: {modoActual},
                     onSelectionChanged: (sel) {
-                      // Cambia el tema en tiempo real 
+                      // Cambia el tema en tiempo real
                       context.themeNotifier?.value = sel.first;
                       context.prefsService?.guardarModoTema(sel.first);
                     },

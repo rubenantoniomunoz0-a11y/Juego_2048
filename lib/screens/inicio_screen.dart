@@ -24,7 +24,6 @@ class _InicioScreenState extends State<InicioScreen> {
     _comprobarPartidaGuardada();
   }
 
-  // Comprueba en la BD si hay alguna partida en curso (Requisito 4.1.6)
   Future<void> _comprobarPartidaGuardada() async {
     final p = await _guardadaDao.cargar();
     if (mounted) {
@@ -45,86 +44,106 @@ class _InicioScreenState extends State<InicioScreen> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.grid_on, size: 80, color: Colors.orange),
-            const SizedBox(height: AppTheme.espaciadoL),
-            Text(
-              'Bienvenido al 2048',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: AppTheme.espaciadoXL),
+        child: SingleChildScrollView( // Añadido para evitar desbordes en pantallas pequeñas
+          padding: const EdgeInsets.all(AppTheme.espaciadoM),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.grid_on, size: 80, color: Colors.orange),
+              const SizedBox(height: AppTheme.espaciadoL),
+              Text(
+                'Bienvenido al 2048',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: AppTheme.espaciadoXL),
 
-            // BOTÓN CONTINUAR (solo si hay partida guardada)
-            if (_partidaGuardada != null) ...[
+              // BOTÓN CONTINUAR (solo si hay partida guardada)
+              if (_partidaGuardada != null) ...[
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      Routes.juego,
+                      arguments: _partidaGuardada,
+                    ).then((_) => _comprobarPartidaGuardada());
+                  },
+                  icon: const Icon(Icons.play_circle),
+                  label: const Text('Continuar partida'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.espaciadoM),
+              ],
+
+              // BOTÓN NUEVA PARTIDA
               ElevatedButton.icon(
                 onPressed: () {
-                  // Navega al juego pasando la partida guardada
-                  Navigator.pushNamed(
-                    context,
-                    Routes.juego,
-                    arguments: _partidaGuardada,
-                  ).then((_) => _comprobarPartidaGuardada()); // Al volver, recarga
+                  _guardadaDao.borrar();
+                  Navigator.pushNamed(context, Routes.juego)
+                      .then((_) => _comprobarPartidaGuardada());
                 },
-                icon: const Icon(Icons.play_circle),
-                label: const Text('Continuar partida'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Nueva partida'),
               ),
               const SizedBox(height: AppTheme.espaciadoM),
+
+              // BOTÓN HISTORIAL
+              OutlinedButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.historial),
+                icon: const Icon(Icons.history),
+                label: const Text('Ver Historial'),
+              ),
+              const SizedBox(height: AppTheme.espaciadoM),
+
+              // BOTÓN RANKING (NUEVO)
+              OutlinedButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.ranking),
+                icon: const Icon(Icons.leaderboard),
+                label: const Text('Ranking y Estadísticas'),
+              ),
+              const SizedBox(height: AppTheme.espaciadoM),
+
+              // BOTÓN AJUSTES (NUEVO)
+              OutlinedButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.ajustes),
+                icon: const Icon(Icons.settings),
+                label: const Text('Ajustes'),
+              ),
+
+              const SizedBox(height: AppTheme.espaciadoXL),
+              const Text('Modo de tema:'),
+              const SizedBox(height: AppTheme.espaciadoS),
+              SegmentedButton<ThemeMode>(
+                segments: const [
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: Icon(Icons.light_mode),
+                    label: Text('Claro'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: Icon(Icons.brightness_auto),
+                    label: Text('Sistema'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: Icon(Icons.dark_mode),
+                    label: Text('Oscuro'),
+                  ),
+                ],
+                selected: {modoActual},
+                onSelectionChanged: (sel) {
+                  context.themeNotifier?.value = sel.first;
+                  context.prefsService?.guardarModoTema(sel.first);
+                },
+              ),
             ],
-
-            // BOTÓN NUEVA PARTIDA
-            ElevatedButton.icon(
-              onPressed: () {
-                // Si empieza una nueva, borramos la anterior
-                _guardadaDao.borrar();
-                Navigator.pushNamed(context, Routes.juego)
-                    .then((_) => _comprobarPartidaGuardada());
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Nueva partida'),
-            ),
-            const SizedBox(height: AppTheme.espaciadoM),
-
-            OutlinedButton.icon(
-              onPressed: () =>
-                  Navigator.pushNamed(context, Routes.historial),
-              icon: const Icon(Icons.history),
-              label: const Text('Ver Historial'),
-            ),
-
-            const SizedBox(height: AppTheme.espaciadoXL),
-            const Text('Modo de tema:'),
-            const SizedBox(height: AppTheme.espaciadoS),
-            SegmentedButton<ThemeMode>(
-              segments: const [
-                ButtonSegment(
-                  value: ThemeMode.light,
-                  icon: Icon(Icons.light_mode),
-                  label: Text('Claro'),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.system,
-                  icon: Icon(Icons.brightness_auto),
-                  label: Text('Sistema'),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.dark,
-                  icon: Icon(Icons.dark_mode),
-                  label: Text('Oscuro'),
-                ),
-              ],
-              selected: {modoActual},
-              onSelectionChanged: (sel) {
-                context.themeNotifier?.value = sel.first;
-                context.prefsService?.guardarModoTema(sel.first);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
