@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import '../routes.dart'; // <--- AHORA ES ASÍ
 import '../data/partida_guardada_dao.dart';
 import '../models/partida_guardada.dart';
-import '../routes.dart';
-import '../services/preferencias_service.dart';
 import '../theme/app_theme.dart';
 import 'app.dart';
 
@@ -44,7 +43,7 @@ class _InicioScreenState extends State<InicioScreen> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : Center(
-        child: SingleChildScrollView( // Añadido para evitar desbordes en pantallas pequeñas
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppTheme.espaciadoM),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -81,7 +80,7 @@ class _InicioScreenState extends State<InicioScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   _guardadaDao.borrar();
-                  Navigator.pushNamed(context, Routes.juego)
+                  Navigator.pushNamed(context,Routes.juego)
                       .then((_) => _comprobarPartidaGuardada());
                 },
                 icon: const Icon(Icons.play_arrow),
@@ -98,7 +97,7 @@ class _InicioScreenState extends State<InicioScreen> {
               ),
               const SizedBox(height: AppTheme.espaciadoM),
 
-              // BOTÓN RANKING (NUEVO)
+              // BOTÓN RANKING
               OutlinedButton.icon(
                 onPressed: () =>
                     Navigator.pushNamed(context, Routes.ranking),
@@ -107,7 +106,7 @@ class _InicioScreenState extends State<InicioScreen> {
               ),
               const SizedBox(height: AppTheme.espaciadoM),
 
-              // BOTÓN AJUSTES (NUEVO)
+              // BOTÓN AJUSTES
               OutlinedButton.icon(
                 onPressed: () =>
                     Navigator.pushNamed(context, Routes.ajustes),
