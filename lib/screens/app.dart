@@ -36,7 +36,7 @@ class _AppState extends State<App> {
           darkTheme: AppTheme.dark,
           themeMode: modo,
           onGenerateRoute: Routes.onGenerateRoute,
-          initialRoute: Routes.inicio,
+          initialRoute: Routes.login,
           builder: (context, child) => _ThemeScope(
             notifier: _themeNotifier,
             prefs: widget.prefs,
