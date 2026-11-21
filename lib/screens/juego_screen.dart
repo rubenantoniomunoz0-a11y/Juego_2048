@@ -133,9 +133,14 @@ class _JuegoScreenState extends State<JuegoScreen> with WidgetsBindingObserver {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+            onPressed: () async {
+              // BORRAMOS LA PARTIDA GUARDADA PARA QUE NO APAREZCA "CONTINUAR"
+              await _guardadaDao.borrar();
+
+              if (context.mounted) {
+                Navigator.pop(context); // Cierra el diálogo
+                Navigator.pop(context); // Sale de la pantalla
+              }
             },
             child: const Text('Salir sin guardar', style: TextStyle(color: Colors.red)),
           ),

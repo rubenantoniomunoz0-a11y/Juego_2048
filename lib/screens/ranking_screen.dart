@@ -65,7 +65,7 @@ class _RankingScreenState extends State<RankingScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2, // 2 columnas
-                  childAspectRatio: 1.5,
+                  childAspectRatio: 1.2,
                   mainAxisSpacing: AppTheme.espaciadoS,
                   crossAxisSpacing: AppTheme.espaciadoS,
                   children: [
