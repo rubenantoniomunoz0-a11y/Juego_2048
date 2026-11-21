@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../data/partida_dao.dart';
+import '../routes.dart';
+import '../services/preferencias_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/confirm_dialog.dart';
-import 'app.dart'; // Para acceder al themeNotifier y prefsService
+import 'app.dart'; // Para acceder al themeNotifier
 
 class AjustesScreen extends StatefulWidget {
   const AjustesScreen({super.key});
@@ -14,7 +16,7 @@ class AjustesScreen extends StatefulWidget {
 class _AjustesScreenState extends State<AjustesScreen> {
   final PartidaDao _partidaDao = PartidaDao();
 
-  // Función para borrar todo el historial (Requisito A.4)
+  // Función para borrar todo el historial
   Future<void> _borrarHistorial() async {
     final confirmado = await showDialog<bool>(
       context: context,
@@ -43,9 +45,35 @@ class _AjustesScreenState extends State<AjustesScreen> {
     }
   }
 
+  // Función para cerrar sesión
+  Future<void> _cerrarSesion() async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (_) => const ConfirmDialog(
+        titulo: 'Cerrar Sesión',
+        mensaje: '¿Estás seguro de que quieres salir de tu cuenta?',
+        textoAceptar: 'Salir',
+      ),
+    );
+
+    if (confirmado == true) {
+      final prefs = await PreferenciasService.crear();
+      // Limpiamos el nombre del jugador
+      await prefs.guardarUltimoJugador('');
+
+      if (mounted) {
+        // Volvemos al Login borrando todo el historial de navegación
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          Routes.login,
+              (route) => false,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Obtenemos el modo de tema actual
     final modoActual = context.themeNotifier?.value ?? ThemeMode.system;
 
     return Scaffold(
@@ -65,7 +93,6 @@ class _AjustesScreenState extends State<AjustesScreen> {
                   const Text('Selecciona el modo de tema:'),
                   const SizedBox(height: AppTheme.espaciadoM),
 
-                  // SegmentedButton para elegir el tema
                   SegmentedButton<ThemeMode>(
                     segments: const [
                       ButtonSegment(
@@ -86,7 +113,6 @@ class _AjustesScreenState extends State<AjustesScreen> {
                     ],
                     selected: {modoActual},
                     onSelectionChanged: (sel) {
-                      // Cambia el tema en tiempo real
                       context.themeNotifier?.value = sel.first;
                       context.prefsService?.guardarModoTema(sel.first);
                     },
@@ -98,19 +124,19 @@ class _AjustesScreenState extends State<AjustesScreen> {
 
           const SizedBox(height: AppTheme.espaciadoL),
 
-          // ─────────── SECCIÓN: DATOS ───────────
+          // ─────────── SECCIÓN: DATOS Y CUENTA ───────────
           Card(
             child: Padding(
               padding: const EdgeInsets.all(AppTheme.espaciadoM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Datos', style: Theme.of(context).textTheme.titleLarge),
+                  Text('Datos y Cuenta', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: AppTheme.espaciadoM),
-                  const Text('Puedes borrar el historial de partidas si quieres empezar de cero.'),
+                  const Text('Puedes borrar el historial de partidas o cerrar tu sesión actual.'),
                   const SizedBox(height: AppTheme.espaciadoM),
 
-                  // Botón para borrar todo el historial (Requisito A.4)
+                  // Botón para borrar todo el historial
                   ElevatedButton.icon(
                     onPressed: _borrarHistorial,
                     icon: const Icon(Icons.delete_forever, color: Colors.white),
@@ -119,6 +145,19 @@ class _AjustesScreenState extends State<AjustesScreen> {
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppTheme.espaciadoM),
+
+                  // Botón para cerrar sesión
+                  OutlinedButton.icon(
+                    onPressed: _cerrarSesion,
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      side: const BorderSide(color: Colors.red),
                     ),
                   ),
                 ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/usuario_dao.dart';
+import '../services/preferencias_service.dart'; // <-- IMPORT AÑADIDO
 import '../theme/app_theme.dart';
 import '../routes.dart';
 
@@ -18,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passController = TextEditingController();
   final _emailController = TextEditingController();
 
-  // Variable para saber si estamos en modo Login o Registro
   bool _esLogin = true;
   bool _cargando = false;
 
@@ -36,8 +36,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (user != null) {
+          // GUARDAMOS EL NOMBRE DEL JUGADOR EN PREFERENCIAS
+          final prefs = await PreferenciasService.crear();
+          await prefs.guardarUltimoJugador(user.usuario);
+
           if (mounted) {
-            // Si el login es correcto, vamos a la pantalla de Inicio
             Navigator.pushReplacementNamed(context, Routes.inicio);
           }
         } else {
@@ -52,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         _mostrarExito('¡Usuario registrado! Ahora puedes iniciar sesión.');
-        setState(() => _esLogin = true); // Cambiamos a la vista de login
+        setState(() => _esLogin = true);
       }
     } catch (e) {
       _mostrarError(e.toString().replaceAll('Exception: ', ''));
@@ -96,7 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: AppTheme.espaciadoXL),
 
-                // CAMPO: NOMBRE DE USUARIO
                 TextFormField(
                   controller: _userController,
                   decoration: const InputDecoration(
@@ -108,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: AppTheme.espaciadoM),
 
-                // CAMPO: EMAIL (solo aparece al registrarse)
                 if (!_esLogin) ...[
                   TextFormField(
                     controller: _emailController,
@@ -126,7 +127,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: AppTheme.espaciadoM),
                 ],
 
-                // CAMPO: CONTRASEÑA
                 TextFormField(
                   controller: _passController,
                   obscureText: true,
@@ -139,7 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: AppTheme.espaciadoXL),
 
-                // BOTÓN DE ACCIÓN
                 if (_cargando)
                   const CircularProgressIndicator()
                 else
@@ -153,7 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: AppTheme.espaciadoM),
 
-                // BOTÓN PARA CAMBIAR ENTRE LOGIN Y REGISTRO
                 TextButton(
                   onPressed: () => setState(() => _esLogin = !_esLogin),
                   child: Text(_esLogin
