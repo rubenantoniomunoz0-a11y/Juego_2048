@@ -4,30 +4,34 @@ import 'package:sqflite/sqflite.dart';
 import '../models/usuario.dart';
 import 'database_helper.dart';
 
-/// DAO para gestionar el registro y login de usuarios.
-/// Pantalla de login y registro.
+/// Objeto de Acceso a Datos (DAO) encargado de gestionar la autenticación
+/// (registro, inicio de sesión y consultas) de los usuarios en SQLite.
 class UsuarioDao {
+  // Instancia del helper para obtener la conexión activa con la base de datos
   final DatabaseHelper _helper = DatabaseHelper();
 
-  /// Encripta la contraseña usando SHA-256.
-  /// La contraseña debe guardarse encriptada.
+  /// Genera un resumen criptográfico (hash) de la contraseña usando SHA-256.
+  /// Evita almacenar contraseñas en texto plano por seguridad.
   static String hashContrasena(String contrasena) {
+    // Convierte el texto a bytes UTF-8, aplica SHA-256 y lo devuelve como String hexadecimal
     return sha256.convert(utf8.encode(contrasena)).toString();
   }
 
-  /// Valida que el email tenga un formato correcto (con '@' y dominio).
+  /// Valida mediante una expresión regular que el correo electrónico
+  /// tenga una estructura básica válida (`texto@dominio.ext`).
   static bool emailValido(String email) {
     final re = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     return re.hasMatch(email);
   }
 
-  /// Registra un nuevo usuario en la base de datos.
+  /// Registra un nuevo usuario tras validar sus datos y comprobar que no exista previamente.
+  /// Devuelve el `id` autogenerado del nuevo registro en la base de datos.
   Future<int> registrar({
     required String usuario,
     required String email,
     required String contrasena,
   }) async {
-    // Validaciones previas
+    // 1. Validaciones de formato y longitud antes de tocar la base de datos
     if (!emailValido(email)) {
       throw const FormatException('El email no es válido');
     }
@@ -40,7 +44,7 @@ class UsuarioDao {
 
     final db = await _helper.database;
 
-    // Comprobamos si el usuario o el email ya existen
+    // 2. Comprobación de unicidad: verifica si ya existe el mismo nombre de usuario o email
     final existentes = await db.query(
       DatabaseHelper.tablaUsuarios,
       where: '${DatabaseHelper.colUsuarioNombre} = ? OR ${DatabaseHelper.colUsuarioEmail} = ?',
@@ -51,7 +55,7 @@ class UsuarioDao {
       throw Exception('Ya existe un usuario con ese nombre o email');
     }
 
-    // Creamos el objeto con la contraseña ya encriptada
+    // 3. Construcción del modelo con la fecha actual y la contraseña encriptada
     final nuevo = Usuario(
       usuario: usuario,
       email: email,
@@ -59,6 +63,7 @@ class UsuarioDao {
       contrasenaHash: hashContrasena(contrasena),
     );
 
+    // 4. Inserción en la tabla 'usuarios' capturando posibles errores nativos de SQLite
     try {
       return await db.insert(DatabaseHelper.tablaUsuarios, nuevo.toMap());
     } on DatabaseException catch (e) {
@@ -66,14 +71,18 @@ class UsuarioDao {
     }
   }
 
-  /// Intenta iniciar sesión. Devuelve el Usuario si las credenciales son correctas, o null si no.
+  /// Verifica las credenciales de acceso comparando el usuario y el hash de su contraseña.
+  /// Devuelve el objeto [Usuario] si coincide, o `null` si las credenciales son incorrectas.
   Future<Usuario?> login({
     required String usuario,
     required String contrasena,
   }) async {
     final db = await _helper.database;
+    
+    // Hasheamos la contraseña introducida para compararla con el hash guardado en la BD
     final hash = hashContrasena(contrasena);
 
+    // Consulta parametrizada (previene inyección SQL) filtrando por usuario y contraseña
     final rows = await db.query(
       DatabaseHelper.tablaUsuarios,
       where: '${DatabaseHelper.colUsuarioNombre} = ? AND ${DatabaseHelper.colUsuarioContrasena} = ?',
@@ -81,18 +90,22 @@ class UsuarioDao {
       limit: 1,
     );
 
+    // Si hay coincidencia reconstruye el objeto Usuario; si no, devuelve null
     return rows.isEmpty ? null : Usuario.fromMap(rows.first);
   }
 
-  /// Busca un usuario por su nombre.
+  /// Busca y recupera los datos de un usuario específico a partir de su nombre de usuario.
+  /// Devuelve `null` si no se encuentra ningún registro con ese nombre.
   Future<Usuario?> porNombre(String usuario) async {
     final db = await _helper.database;
+    
     final rows = await db.query(
       DatabaseHelper.tablaUsuarios,
       where: '${DatabaseHelper.colUsuarioNombre} = ?',
       whereArgs: [usuario],
       limit: 1,
     );
+    
     return rows.isEmpty ? null : Usuario.fromMap(rows.first);
   }
 }
