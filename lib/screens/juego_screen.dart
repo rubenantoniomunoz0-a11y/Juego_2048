@@ -134,12 +134,10 @@ class _JuegoScreenState extends State<JuegoScreen> with WidgetsBindingObserver {
           ),
           TextButton(
             onPressed: () async {
-              // BORRAMOS LA PARTIDA GUARDADA PARA QUE NO APAREZCA "CONTINUAR"
               await _guardadaDao.borrar();
-
               if (context.mounted) {
-                Navigator.pop(context); // Cierra el diálogo
-                Navigator.pop(context); // Sale de la pantalla
+                Navigator.pop(context);
+                Navigator.pop(context);
               }
             },
             child: const Text('Salir sin guardar', style: TextStyle(color: Colors.red)),
@@ -191,12 +189,43 @@ class _JuegoScreenState extends State<JuegoScreen> with WidgetsBindingObserver {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ScoreCard(etiqueta: 'PUNTOS', valor: '${_logic.puntuacion}'),
+                  // DOBLE TOQUE EN LA PUNTUACIÓN
+                  GestureDetector(
+                    onDoubleTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Detalles de la partida'),
+                          content: Text('Tiempo jugado: ${DateTime.now().difference(_inicioPartida).inSeconds} segundos'),
+                          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                        ),
+                      );
+                    },
+                    child: ScoreCard(etiqueta: 'PUNTOS', valor: '${_logic.puntuacion}'),
+                  ),
                   ScoreCard(etiqueta: 'MOVS', valor: '${_logic.movimientos}'),
                 ],
               ),
               const SizedBox(height: AppTheme.espaciadoL),
+
+              // TABLERO
               BoardWidget(tablero: _logic.tablero, onSwipe: _mover),
+
+              // BOTONES DE FLECHAS (ACCESIBILIDAD)
+              const SizedBox(height: AppTheme.espaciadoM),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(icon: const Icon(Icons.arrow_back, size: 32), onPressed: () => _mover(Direccion.izquierda)),
+                  Column(
+                    children: [
+                      IconButton(icon: const Icon(Icons.arrow_upward, size: 32), onPressed: () => _mover(Direccion.arriba)),
+                      IconButton(icon: const Icon(Icons.arrow_downward, size: 32), onPressed: () => _mover(Direccion.abajo)),
+                    ],
+                  ),
+                  IconButton(icon: const Icon(Icons.arrow_forward, size: 32), onPressed: () => _mover(Direccion.derecha)),
+                ],
+              ),
             ],
           ),
         ),

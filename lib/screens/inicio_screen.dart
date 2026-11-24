@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../routes.dart'; // <--- AHORA ES ASÍ
 import '../data/partida_guardada_dao.dart';
 import '../models/partida_guardada.dart';
+import '../routes.dart';
 import '../theme/app_theme.dart';
 import 'app.dart';
 
@@ -56,7 +56,7 @@ class _InicioScreenState extends State<InicioScreen> {
               ),
               const SizedBox(height: AppTheme.espaciadoXL),
 
-              // BOTÓN CONTINUAR (solo si hay partida guardada)
+              // BOTÓN CONTINUAR (Si hay partida guardada)
               if (_partidaGuardada != null) ...[
                 ElevatedButton.icon(
                   onPressed: () {
@@ -71,52 +71,58 @@ class _InicioScreenState extends State<InicioScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
+                    minimumSize: const Size(220, 50),
                   ),
                 ),
                 const SizedBox(height: AppTheme.espaciadoM),
               ],
 
-              // BOTÓN NUEVA PARTIDA
+              // BOTÓN NUEVA PARTIDA (Con async/await corregido)
               ElevatedButton.icon(
-                onPressed: () {
-                  _guardadaDao.borrar();
-                  Navigator.pushNamed(context,Routes.juego)
-                      .then((_) => _comprobarPartidaGuardada());
+                onPressed: () async {
+                  await _guardadaDao.borrar();
+                  if (context.mounted) {
+                    Navigator.pushNamed(context, Routes.juego)
+                        .then((_) => _comprobarPartidaGuardada());
+                  }
                 },
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Nueva partida'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(220, 50),
+                ),
               ),
               const SizedBox(height: AppTheme.espaciadoM),
 
-              // BOTÓN HISTORIAL
+              // BOTONES DE NAVEGACIÓN
               OutlinedButton.icon(
-                onPressed: () =>
-                    Navigator.pushNamed(context, Routes.historial),
+                onPressed: () => Navigator.pushNamed(context, Routes.historial),
                 icon: const Icon(Icons.history),
                 label: const Text('Ver Historial'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(220, 50)),
               ),
               const SizedBox(height: AppTheme.espaciadoM),
 
-              // BOTÓN RANKING
               OutlinedButton.icon(
-                onPressed: () =>
-                    Navigator.pushNamed(context, Routes.ranking),
+                onPressed: () => Navigator.pushNamed(context, Routes.ranking),
                 icon: const Icon(Icons.leaderboard),
                 label: const Text('Ranking y Estadísticas'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(220, 50)),
               ),
               const SizedBox(height: AppTheme.espaciadoM),
 
-              // BOTÓN AJUSTES
               OutlinedButton.icon(
-                onPressed: () =>
-                    Navigator.pushNamed(context, Routes.ajustes),
+                onPressed: () => Navigator.pushNamed(context, Routes.ajustes),
                 icon: const Icon(Icons.settings),
                 label: const Text('Ajustes'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(220, 50)),
               ),
 
               const SizedBox(height: AppTheme.espaciadoXL),
               const Text('Modo de tema:'),
               const SizedBox(height: AppTheme.espaciadoS),
+
+              // SELECTOR DE TEMA
               SegmentedButton<ThemeMode>(
                 segments: const [
                   ButtonSegment(
