@@ -1,35 +1,59 @@
 import 'package:flutter/material.dart';
 
-// Colores y tamaños centralizados para toda la app.
-// Ningún valor visual debe estar repetido a mano por el código.
 class ColoresFicha {
-  // Paleta para el tema claro
+  // Paleta Claro: Colores vivos
   static const Map<int, Color> _claro = {
-    0: Color(0xFFCDC1B4), 2: Color(0xFFEEE4DA), 4: Color(0xFFEDE0C8),
-    8: Color(0xFFF2B179), 16: Color(0xFFF59563), 32: Color(0xFFF67C5F),
-    64: Color(0xFFF65E3B), 128: Color(0xFFEDCF72), 256: Color(0xFFEDCC61),
-    512: Color(0xFFEDC850), 1024: Color(0xFFEDC53F), 2048: Color(0xFFEDC22E),
+    0: Color(0xFFE0E0E0),      // Gris claro (hueco)
+    2: Color(0xFFFFF59D),      // Amarillo pastel (Texto oscuro)
+    4: Color(0xFFFFD54F),      // Amarillo vibrante (Texto oscuro)
+    8: Color(0xFFFFB300),      // Naranja ámbar (Texto oscuro)
+    16: Color(0xFFFF7043),     // Naranja coral (Texto blanco)
+    32: Color(0xFFF4511E),     // Rojo anaranjado (Texto blanco)
+    64: Color(0xFFE53935),     // Rojo brillante (Texto blanco)
+    128: Color(0xFFD81B60),    // Rosa fuerte (Texto blanco)
+    256: Color(0xFF8E24AA),    // Púrpura (Texto blanco)
+    512: Color(0xFF5E35B1),    // Violeta (Texto blanco)
+    1024: Color(0xFF3949AB),   // Azul índigo (Texto blanco)
+    2048: Color(0xFF00ACC1),   // Cian eléctrico (Texto blanco)
   };
 
-  // Paleta para el tema oscuro
+  // Paleta Oscuro: Colores vibrantes pero adaptados
   static const Map<int, Color> _oscuro = {
-    0: Color(0xFF3C3A32), 2: Color(0xFF4E4A42), 4: Color(0xFF655D4E),
-    8: Color(0xFFB47F4A), 16: Color(0xFFB8653C), 32: Color(0xFFB35030),
-    64: Color(0xFFB93A1C), 128: Color(0xFFB08E3E), 256: Color(0xFFB08C2A),
-    512: Color(0xFFB0891A), 1024: Color(0xFFB0850A), 2048: Color(0xFFB08200),
+    0: Color(0xFF2C2C2C),      // Gris oscuro (hueco)
+    2: Color(0xFFFBC02D),      // Amarillo oscuro (Texto oscuro)
+    4: Color(0xFFF57F17),      // Ámbar (Texto blanco)
+    8: Color(0xFFE65100),      // Naranja oscuro (Texto blanco)
+    16: Color(0xFFD84315),     // Rojo oscuro (Texto blanco)
+    32: Color(0xFFC62828),     // Rojo profundo (Texto blanco)
+    64: Color(0xFFAD1457),     // Fucsia oscuro (Texto blanco)
+    128: Color(0xFF6A1B9A),    // Morado oscuro (Texto blanco)
+    256: Color(0xFF4527A0),    // Índigo oscuro (Texto blanco)
+    512: Color(0xFF283593),    // Azul noche (Texto blanco)
+    1024: Color(0xFF00838F),   // Cian oscuro (Texto blanco)
+    2048: Color(0xFF00E5FF),   // Cian neón (Texto oscuro/negro para que contraste)
   };
 
-  // Devuelve el color de fondo de la ficha según su valor y el brillo actual
+  // Devuelve el color de fondo de la ficha
   static Color porValor(int valor, Brightness brillo) {
     final mapa = brillo == Brightness.dark ? _oscuro : _claro;
-    return mapa[valor] ?? (brillo == Brightness.dark ? const Color(0xFF1A1A1A) : const Color(0xFF3C3A32));
+    return mapa[valor] ?? (brillo == Brightness.dark ? const Color(0xFF121212) : const Color(0xFF9E9E9E));
   }
 
-  // Devuelve el color del texto para que contraste con el fondo de la ficha
+  // Lógica de contraste: Decide si el texto es blanco o negro
   static Color textoPorValor(int valor, Brightness brillo) {
-    if (valor <= 4 && brillo == Brightness.light) return Colors.black87;
     if (valor == 0) return Colors.transparent;
-    return Colors.white;
+
+    // Si es modo claro
+    if (brillo == Brightness.light) {
+      if (valor <= 8) return Colors.black87; // Texto oscuro para amarillos y naranjas claros
+      return Colors.white; // Texto blanco para rojos, morados, azules...
+    }
+    // Si es modo oscuro
+    else {
+      if (valor == 2) return Colors.black87; // Texto oscuro en el amarillo oscuro
+      if (valor == 2048) return Colors.black87; // Texto oscuro en el cian neón
+      return Colors.white; // Texto blanco para el resto
+    }
   }
 }
 
@@ -41,21 +65,37 @@ class AppTheme {
   static const double radioBorde = 12;
   static const double radioFicha = 8;
 
-  // Tema claro
+  // Tema Claro con Naranja Eléctrico
   static final ThemeData light = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF67C5F), brightness: Brightness.light),
-    scaffoldBackgroundColor: const Color(0xFFFAF8EF),
-    appBarTheme: const AppBarTheme(centerTitle: true, backgroundColor: Color(0xFFFAF8EF), foregroundColor: Colors.black87, elevation: 0),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFFFF5722), // Naranja Eléctrico
+      brightness: Brightness.light,
+    ),
+    scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+    appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        backgroundColor: Color(0xFFF8F9FA),
+        foregroundColor: Colors.black87,
+        elevation: 0
+    ),
   );
 
-  // Tema oscuro
+  // Tema Oscuro con Cian Eléctrico
   static final ThemeData dark = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB35030), brightness: Brightness.dark),
-    scaffoldBackgroundColor: const Color(0xFF1A1A1A),
-    appBarTheme: const AppBarTheme(centerTitle: true, backgroundColor: Color(0xFF1A1A1A), foregroundColor: Colors.white, elevation: 0),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF00BCD4), // Cian Eléctrico
+      brightness: Brightness.dark,
+    ),
+    scaffoldBackgroundColor: const Color(0xFF121212),
+    appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        backgroundColor: Color(0xFF121212),
+        foregroundColor: Colors.white,
+        elevation: 0
+    ),
   );
 }
