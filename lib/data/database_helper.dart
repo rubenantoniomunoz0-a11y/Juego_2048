@@ -4,9 +4,9 @@ import 'package:sqflite/sqflite.dart';
 /// Clase Singleton que gestiona la creación, apertura y migración
 /// de la base de datos local SQLite de la aplicación.
 class DatabaseHelper {
-  // ─────────────────────────────────────────────
+
   // PATRÓN SINGLETON
-  // ─────────────────────────────────────────────
+
   
   // Única instancia privada y estática de la clase
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -27,9 +27,8 @@ class DatabaseHelper {
     return _db!;
   }
 
-  // ─────────────────────────────────────────────
   // CONSTANTES (Evitan errores tipográficos en los DAOs)
-  // ─────────────────────────────────────────────
+
   
   // Nombre del archivo físico de la base de datos y versión actual del esquema
   static const String dbName = 'game2048.db';
@@ -62,9 +61,9 @@ class DatabaseHelper {
   static const String colGuardadaMovimientos = 'movimientos';
   static const String colGuardadaSegundos = 'segundos_transcurridos';
 
-  // ─────────────────────────────────────────────
+
   // APERTURA Y CONFIGURACIÓN
-  // ─────────────────────────────────────────────
+
   
   /// Construye la ruta en el dispositivo y abre (o crea) la base de datos.
   Future<Database> _initDb() async {
@@ -86,9 +85,9 @@ class DatabaseHelper {
     );
   }
 
-  // ─────────────────────────────────────────────
+
   // CREACIÓN DE TABLAS (Se ejecuta solo la primera vez)
-  // ─────────────────────────────────────────────
+
   
   /// Crea desde cero todas las tablas necesarias cuando se instala la app por primera vez.
   Future<void> _onCreate(Database db, int version) async {
