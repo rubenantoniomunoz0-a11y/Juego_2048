@@ -1,18 +1,27 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-/// Clase Singleton que gestiona la creación y apertura de la base de datos SQLite.
+/// Clase Singleton que gestiona la creación, apertura y migración
+/// de la base de datos local SQLite de la aplicación.
 class DatabaseHelper {
   // ─────────────────────────────────────────────
   // PATRÓN SINGLETON
   // ─────────────────────────────────────────────
+  
+  // Única instancia privada y estática de la clase
   static final DatabaseHelper _instance = DatabaseHelper._internal();
+  
+  // Constructor factory que siempre devuelve la misma instancia existente
   factory DatabaseHelper() => _instance;
+  
+  // Constructor privado para evitar que se instancie desde fuera de la clase
   DatabaseHelper._internal();
 
+  // Referencia estática a la conexión activa con la base de datos
   static Database? _db;
 
-  /// Getter para obtener la base de datos. Si no está abierta, la abre.
+  /// Getter asíncrono para obtener la instancia de la base de datos.
+  /// Si aún no se ha inicializado, ejecuta [_initDb] antes de devolverla.
   Future<Database> get database async {
     _db ??= await _initDb();
     return _db!;
@@ -21,10 +30,12 @@ class DatabaseHelper {
   // ─────────────────────────────────────────────
   // CONSTANTES (Evitan errores tipográficos en los DAOs)
   // ─────────────────────────────────────────────
+  
+  // Nombre del archivo físico de la base de datos y versión actual del esquema
   static const String dbName = 'game2048.db';
   static const int dbVersion = 2; // Versión 2 para aplicar la migración
 
-  // Tabla usuarios
+  // Definición de la tabla 'usuarios' y sus columnas
   static const String tablaUsuarios = 'usuarios';
   static const String colUsuarioId = 'id';
   static const String colUsuarioNombre = 'usuario';
@@ -32,7 +43,7 @@ class DatabaseHelper {
   static const String colUsuarioEmail = 'email';
   static const String colUsuarioContrasena = 'contrasena';
 
-  // Tabla partidas
+  // Definición de la tabla 'partidas' (historial) y sus columnas
   static const String tablaPartidas = 'partidas';
   static const String colPartidaId = 'id';
   static const String colPartidaUsuario = 'usuario';
@@ -43,7 +54,7 @@ class DatabaseHelper {
   static const String colPartidaFecha = 'fecha';
   static const String colPartidaTamanoTablero = 'tamano_tablero'; // Columna añadida en v2
 
-  // Tabla partida_guardada
+  // Definición de la tabla 'partida_guardada' (estado en curso) y sus columnas
   static const String tablaPartidaGuardada = 'partida_guardada';
   static const String colGuardadaId = 'id';
   static const String colGuardadaTablero = 'tablero';
@@ -54,17 +65,23 @@ class DatabaseHelper {
   // ─────────────────────────────────────────────
   // APERTURA Y CONFIGURACIÓN
   // ─────────────────────────────────────────────
+  
+  /// Construye la ruta en el dispositivo y abre (o crea) la base de datos.
   Future<Database> _initDb() async {
+    // Obtiene el directorio estándar de bases de datos según el SO (Android/iOS)
     final ruta = join(await getDatabasesPath(), dbName);
 
     return openDatabase(
       ruta,
       version: dbVersion,
+      // Se ejecuta cada vez que se abre la BD, antes de crear o actualizar tablas
       onConfigure: (db) async {
         // Requisito A.1: Activar claves foráneas si normalizamos el modelo
         await db.execute('PRAGMA foreign_keys = ON');
       },
+      // Callback que se lanza si el archivo de BD no existía previamente
       onCreate: _onCreate,
+      // Callback que se lanza si `dbVersion` es mayor que la versión guardada en disco
       onUpgrade: _onUpgrade,
     );
   }
@@ -72,6 +89,8 @@ class DatabaseHelper {
   // ─────────────────────────────────────────────
   // CREACIÓN DE TABLAS (Se ejecuta solo la primera vez)
   // ─────────────────────────────────────────────
+  
+  /// Crea desde cero todas las tablas necesarias cuando se instala la app por primera vez.
   Future<void> _onCreate(Database db, int version) async {
     // 1. Crear tabla usuarios
     await db.execute('''
@@ -84,7 +103,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 2. Crear tabla partidas
+    // 2. Crear tabla partidas (incluye ya el campo 'tamano_tablero' por defecto a 4)
     await db.execute('''
       CREATE TABLE $tablaPartidas (
         $colPartidaId INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +117,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 3. Crear tabla partida_guardada
+    // 3. Crear tabla partida_guardada (sin AUTOINCREMENT porque usa un ID fijo)
     await db.execute('''
       CREATE TABLE $tablaPartidaGuardada (
         $colGuardadaId INTEGER PRIMARY KEY,
@@ -110,9 +129,11 @@ class DatabaseHelper {
     ''');
   }
 
-  // ─────────────────────────────────────────────
+  
   // MIGRACIÓN
-  // ─────────────────────────────────────────────
+  
+  
+  /// Gestiona las actualizaciones del esquema cuando sube la versión de la base de datos.
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       // Si la BD era la versión 1, le añadimos la columna 'tamano_tablero'
@@ -124,9 +145,8 @@ class DatabaseHelper {
     }
   }
 
-  // ─────────────────────────────────────────────
   // UTILIDADES
-  // ─────────────────────────────────────────────
+
 
   /// Borra la fila de partida en curso (usar al terminar o reiniciar).
   Future<void> borrarPartidaGuardada() async {
