@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../routes.dart'; // <--- AHORA ES ASÍ
 import '../data/partida_dao.dart';
 import '../models/partida.dart';
+import 'package:juego_2048/routes.dart';
 import '../theme/app_theme.dart';
 import '../widgets/async_data_view.dart';
 import '../widgets/confirm_dialog.dart';
@@ -19,7 +19,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
   final PartidaDao _dao = PartidaDao();
   late Future<List<Partida>> _futurePartidas;
 
-  // Variables para los filtros
   String? _filtroUsuario;
   int? _filtroFicha;
 
@@ -79,7 +78,8 @@ class _HistorialScreenState extends State<HistorialScreen> {
               title: const Text('Ver detalle'),
               onTap: () {
                 Navigator.pop(ctx);
-                Navigator.pushNamed(context, Routes.detalle, arguments: p.id);
+                Navigator.pushNamed(context, Routes.detalle, arguments: p.id)
+                    .then((_) => _cargarPartidas()); // Refresca al volver
               },
             ),
             ListTile(
@@ -169,7 +169,9 @@ class _HistorialScreenState extends State<HistorialScreen> {
                             fichaMaxima: p.fichaMaxima,
                             fecha: p.fecha.toLocal().toString().split(' ')[0],
                             onTap: () {
-                              Navigator.pushNamed(context, Routes.detalle, arguments: p.id);
+                              // Refresca la lista al volver del detalle
+                              Navigator.pushNamed(context, Routes.detalle, arguments: p.id)
+                                  .then((_) => _cargarPartidas());
                             },
                           ),
                         ),
